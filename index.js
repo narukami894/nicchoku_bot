@@ -42,7 +42,10 @@ controller.hears(nicchokuWords, ["direct_message", "direct_mention", "mention"],
 });
 
 controller.hears(["日直スキップ"], ["direct_message", "direct_mention", "mention"], function(bot, message) {
-  client.set("nicchoku_index", getTomorrowIndex)
+  getNicchokuIndex().then(function(result){
+    let index = Number(result)
+    client.set("nicchoku_index", getTomorrowIndex(index));
+  });
 });
 
 function getTomorrowIndex(index) {
