@@ -17,8 +17,11 @@ const bot = controller.spawn({
     onTick: function() {
       getNicchokuCalled().then(function(result){
         if (result === "true") {
-          client.set("nicchoku_index", getTomorrowIndex);
-          client.set("nicchoku_called", "false");
+          getNicchokuIndex().then(function(result){
+            let index = Number(result)
+            client.set("nicchoku_index", getTomorrowIndex(index));
+            client.set("nicchoku_called", "false");
+          });
         }
       });
     },
@@ -27,22 +30,19 @@ const bot = controller.spawn({
   });
 });
 
-// 動作確認
-controller.hears(["ping"], ["direct_message", "direct_mention", "mention"], function(bot, message) {
-  getNicchokuCalled().then(function(result){
-    console.log(result)
-  });
-  bot.reply(message, "PONG");
-  client.set("nicchoku_called", "false")
-});
+const nicchokuWords = ["日直教えて", "日直おしえて", "今日の日直", "きょうの日直"]
 
-controller.hears(["日直", "にっちょく"], ["direct_message", "direct_mention", "mention"], function(bot, message) {
+controller.hears(nicchokuWords, ["direct_message", "direct_mention", "mention"], function(bot, message) {
   getNicchokuIndex().then(function(result){
     let index = Number(result)
     let tomorrowIndex = getTomorrowIndex(index)
     bot.reply(message, "<!here> 本日の日直は" + teams.allMember[index] + "です！ ちなみに次の日直は" + teams.allMember[tomorrowIndex] + "です");
     client.set("nicchoku_called", "true")
   });
+});
+
+controller.hears(["日直スキップ"], ["direct_message", "direct_mention", "mention"], function(bot, message) {
+  client.set("nicchoku_index", getTomorrowIndex)
 });
 
 function getTomorrowIndex(index) {
